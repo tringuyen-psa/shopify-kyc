@@ -1,0 +1,71 @@
+export const defaultPrimaryColor = '#625afa';
+
+export const LightTheme = {
+  colorBackground: '#ffffff',
+  colorBackgroundSurface: '#f8f9fa',
+  colorText: '#30313d',
+  colorTextSecondary: '#6b7280',
+  colorTextPlaceholder: '#9ca3af',
+  colorTextDisabled: '#d1d5db',
+  colorDanger: '#dc2626',
+  colorWarning: '#d97706',
+  colorSuccess: '#059669',
+  colorPrimary: defaultPrimaryColor,
+  colorPrimarySurface: '#f3f0ff',
+  colorBorder: '#e5e7eb',
+  colorDivider: '#f3f4f6',
+  colorInputBorder: '#e5e7eb',
+  colorInputText: '#374151',
+  colorLogo: '#625afa',
+  colorTabActive: '#625afa',
+  colorBadge: '#625afa',
+  colorBadgeText: '#ffffff',
+  colorBadgeBackground: '#625afa',
+  fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif",
+  borderRadius: '8px', // Changed from 0.5rem to 8px (max 24px allowed)
+  buttonPrimaryColorBackground: '#625afa',
+  buttonPrimaryColorText: '#ffffff',
+  buttonSecondaryColorBackground: '#ffffff',
+  buttonSecondaryColorText: '#374151',
+  buttonSecondaryBorderColor: '#e5e7eb',
+  buttonDangerColorBackground: '#dc2626',
+  buttonDangerColorText: '#ffffff',
+  spacingUnit: '8px', // Changed from 0.25rem to 8px (between 8px-20px)
+  fontSizeBase: '1rem',
+  // headingFontSize: '1.5rem', // Removed as it's not supported
+};
+
+export const DarkTheme = {
+  colorBackground: '#1a1b1e',
+  colorBackgroundSurface: '#2d2e33',
+  colorText: '#ffffff',
+  colorTextSecondary: '#a1a1aa',
+  colorTextPlaceholder: '#71717a',
+  colorTextDisabled: '#52525b',
+  colorDanger: '#ef4444',
+  colorWarning: '#f59e0b',
+  colorSuccess: '#10b981',
+  colorPrimary: defaultPrimaryColor,
+  colorPrimarySurface: '#312281',
+  colorBorder: '#404040',
+  colorDivider: '#404040',
+  colorInputBorder: '#404040',
+  colorInputText: '#ffffff',
+  colorLogo: '#818cf8',
+  colorTabActive: '#818cf8',
+  colorBadge: '#818cf8',
+  colorBadgeText: '#ffffff',
+  colorBadgeBackground: '#818cf8',
+  fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif",
+  borderRadius: '8px', // Changed from 0.5rem to 8px (max 24px allowed)
+  buttonPrimaryColorBackground: '#818cf8',
+  buttonPrimaryColorText: '#ffffff',
+  buttonSecondaryColorBackground: '#2d2e33',
+  buttonSecondaryColorText: '#ffffff',
+  buttonSecondaryBorderColor: '#404040',
+  buttonDangerColorBackground: '#ef4444',
+  buttonDangerColorText: '#ffffff',
+  spacingUnit: '8px', // Changed from 0.25rem to 8px (between 8px-20px)
+  fontSizeBase: '1rem',
+  // headingFontSize: '1.5rem', // Removed as it's not supported
+};
