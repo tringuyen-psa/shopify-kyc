@@ -1,47 +1,5 @@
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
-import fs from "fs";
-import path from "path";
-
-const DEMO_ACCOUNTS_FILE = path.join(process.cwd(), "data", "demo-accounts.json");
-
-// Ensure data directory exists
-function ensureDataDir() {
-  const dataDir = path.dirname(DEMO_ACCOUNTS_FILE);
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-  }
-}
-
-// Read existing demo accounts
-function readDemoAccounts(): Array<{
-  accountId: string;
-  createdAt: string;
-  email: string;
-  businessName: string;
-}> {
-  ensureDataDir();
-  if (!fs.existsSync(DEMO_ACCOUNTS_FILE)) {
-    return [];
-  }
-  try {
-    const data = fs.readFileSync(DEMO_ACCOUNTS_FILE, "utf-8");
-    return JSON.parse(data);
-  } catch {
-    return [];
-  }
-}
-
-// Save demo accounts
-function saveDemoAccounts(accounts: Array<{
-  accountId: string;
-  createdAt: string;
-  email: string;
-  businessName: string;
-}>) {
-  ensureDataDir();
-  fs.writeFileSync(DEMO_ACCOUNTS_FILE, JSON.stringify(accounts, null, 2));
-}
 
 export async function POST() {
   try {
@@ -84,16 +42,6 @@ export async function POST() {
 
     console.log("Demo account created:", account.id);
 
-    // Save to JSON file
-    const accounts = readDemoAccounts();
-    accounts.push({
-      accountId: account.id,
-      createdAt: new Date().toISOString(),
-      email: email,
-      businessName: businessName,
-    });
-    saveDemoAccounts(accounts);
-
     return NextResponse.json({
       success: true,
       accountId: account.id,
@@ -114,10 +62,20 @@ export async function POST() {
   }
 }
 
-// GET: List all demo accounts
+// GET: List all demo accounts from Stripe
 export async function GET() {
   try {
-    const accounts = readDemoAccounts();
+    const stripeAccounts = await stripe.accounts.list({ limit: 100 });
+
+    const accounts = stripeAccounts.data
+      .filter(acc => acc.email?.includes("furever-demo.com"))
+      .map(acc => ({
+        accountId: acc.id,
+        createdAt: new Date(acc.created * 1000).toISOString(),
+        email: acc.email,
+        businessName: acc.business_profile?.name || "Demo Account",
+      }));
+
     return NextResponse.json({
       success: true,
       accounts: accounts,

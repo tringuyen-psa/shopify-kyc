@@ -1,17 +1,48 @@
 'use client'
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { Building, Users, ArrowRight, Loader2 } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Building, ArrowRight, Loader2, Plus } from 'lucide-react'
 import { accountManager } from '@/lib/stripe-account'
 
 export const dynamic = 'force-dynamic'
 
+interface DemoAccount {
+  accountId: string
+  createdAt: string
+  email: string
+  businessName: string
+}
+
 export default function SelectAccountPage() {
   const [loading, setLoading] = useState(false)
+  const [loadingAccounts, setLoadingAccounts] = useState(true)
+  const [accounts, setAccounts] = useState<DemoAccount[]>([])
   const [error, setError] = useState<string | null>(null)
 
-  const handleDemoAccount = async () => {
+  useEffect(() => {
+    fetchAccounts()
+  }, [])
+
+  const fetchAccounts = async () => {
+    try {
+      const response = await fetch('/api/demo-account/create')
+      const data = await response.json()
+      if (data.success) {
+        setAccounts(data.accounts)
+      }
+    } catch (err) {
+      console.error('Error fetching accounts:', err)
+    } finally {
+      setLoadingAccounts(false)
+    }
+  }
+
+  const handleSelectAccount = (accountId: string) => {
+    accountManager.save(accountId, 'demo')
+    window.location.href = '/home'
+  }
+
+  const handleCreateAccount = async () => {
     setLoading(true)
     setError(null)
 
@@ -29,10 +60,7 @@ export default function SelectAccountPage() {
         throw new Error(data.error || 'Failed to create demo account')
       }
 
-      // Save the new account to localStorage
       accountManager.save(data.accountId, 'demo')
-
-      // Redirect to home
       window.location.href = '/home'
     } catch (err: any) {
       console.error('Error creating demo account:', err)
@@ -43,7 +71,7 @@ export default function SelectAccountPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-5xl">
+      <div className="w-full max-w-3xl">
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-3 mb-6">
             <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center">
@@ -52,143 +80,70 @@ export default function SelectAccountPage() {
             <h1 className="text-4xl font-bold text-gray-900">Furever</h1>
           </div>
           <p className="text-xl text-gray-600">
-            Welcome! Choose how you want to get started
-          </p>
-          <p className="text-sm text-gray-500 mt-2">
-            Access your account without logging into Stripe - use our platform authentication instead
+            Select an account to continue
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* User Login Option */}
-          <div className="bg-white rounded-xl shadow-lg p-8 border-2 border-green-100 hover:border-green-300 transition-colors">
-            <div className="flex items-center mb-4">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
-                <Users className="h-6 w-6 text-green-600" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">Business Owner</h2>
-                <p className="text-gray-600">I&apos;m a business owner managing my account</p>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <p className="text-gray-700">
-                Sign in with your business credentials to access your Stripe Connect account.
-                No need to log into Stripe directly - we handle everything through our platform.
-              </p>
-
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li className="flex items-center">
-                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></span>
-                  Quick and easy setup
-                </li>
-                <li className="flex items-center">
-                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></span>
-                  Automatic Stripe account creation
-                </li>
-                <li className="flex items-center">
-                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></span>
-                  No Stripe login required
-                </li>
-                <li className="flex items-center">
-                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></span>
-                  Full payment management
-                </li>
-              </ul>
-
-              <Link
-                href="/login"
-                className="w-full flex items-center justify-center bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors font-medium"
-              >
-                Sign in to Your Account
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </div>
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700 mb-6">
+            {error}
           </div>
+        )}
 
-          {/* Existing Account Option */}
-          <div className="bg-white rounded-xl shadow-lg p-8 border-2 border-blue-100 hover:border-blue-300 transition-colors">
-            <div className="flex items-center mb-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-                <Building className="h-6 w-6 text-blue-600" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">Demo Account</h2>
-                <p className="text-gray-600">Explore the platform with test data</p>
-              </div>
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          {loadingAccounts ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
             </div>
+          ) : (
+            <div className="space-y-3">
+              {accounts.map((account) => (
+                <button
+                  key={account.accountId}
+                  onClick={() => handleSelectAccount(account.accountId)}
+                  className="w-full flex items-center p-4 border-2 border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50 transition-colors text-left"
+                >
+                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                    <Building className="h-5 w-5 text-green-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-900">{account.businessName}</p>
+                    <p className="text-sm text-gray-500">{account.email}</p>
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-gray-400" />
+                </button>
+              ))}
 
-            <div className="space-y-4">
-              <p className="text-gray-700">
-                Try out all features with our demo account. Perfect for exploring the platform
-                without setting up payments.
-              </p>
-
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li className="flex items-center">
-                  <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></span>
-                  No setup required
-                </li>
-                <li className="flex items-center">
-                  <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></span>
-                  Test with sample data
-                </li>
-                <li className="flex items-center">
-                  <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></span>
-                  All features enabled
-                </li>
-                <li className="flex items-center">
-                  <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></span>
-                  No Stripe login required
-                </li>
-              </ul>
-
-              {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
-                  {error}
-                </div>
+              {accounts.length === 0 && (
+                <p className="text-center text-gray-500 py-4">
+                  No accounts found. Create one to get started.
+                </p>
               )}
 
               <button
-                onClick={handleDemoAccount}
+                onClick={handleCreateAccount}
                 disabled={loading}
-                className="w-full flex items-center justify-center bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:bg-blue-400 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center p-4 border-2 border-dashed border-blue-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors text-blue-600 font-medium"
               >
                 {loading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating Demo Account...
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Creating Account...
                   </>
                 ) : (
                   <>
-                    Try Demo Account
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    <Plus className="mr-2 h-5 w-5" />
+                    Create New Account
                   </>
                 )}
               </button>
             </div>
-          </div>
-        </div>
-
-        <div className="mt-12 text-center">
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 inline-block">
-            <h3 className="text-lg font-semibold text-yellow-800 mb-2">
-              🔐 Enhanced Security & Convenience
-            </h3>
-            <p className="text-yellow-700 text-sm max-w-2xl">
-              Our platform uses Stripe Connect with authentication bypass, meaning you never need to log into Stripe directly.
-              All account management, payments, and payouts happen securely through our interface.
-            </p>
-          </div>
+          )}
         </div>
 
         <div className="mt-8 text-center text-sm text-gray-500">
           <p>
-            Powered by Stripe Connect • Secure payment processing • No Stripe login required
-          </p>
-          <p className="mt-2">
-            Questions? Contact support@furever.com
+            Powered by Stripe Connect • Secure payment processing
           </p>
         </div>
       </div>
