@@ -1,0 +1,19 @@
+# Secrets
+file.live.txt
+.env
+
+# Dependencies
+node_modules/
+
+# Build
+.next/
+dist/
+build/
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
