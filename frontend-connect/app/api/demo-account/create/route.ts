@@ -71,7 +71,7 @@ export async function GET() {
       .filter(acc => acc.email?.includes("furever-demo.com"))
       .map(acc => ({
         accountId: acc.id,
-        createdAt: new Date(acc.created * 1000).toISOString(),
+        createdAt: new Date((acc.created ?? 0) * 1000).toISOString(),
         email: acc.email,
         businessName: acc.business_profile?.name || "Demo Account",
       }));

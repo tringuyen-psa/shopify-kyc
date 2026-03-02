@@ -314,6 +314,7 @@ export default function CloneAccountPage() {
 
   useEffect(() => {
     fetchAccount()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Handle form submit
