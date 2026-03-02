@@ -19,16 +19,9 @@ export function getStripeAccountId(request: NextRequest): string | null {
     return queryAccountId;
   }
 
-  // Final fallback: use demo account
-  const demoAccountId = process.env.DEMO_ACCOUNT_ID;
-
-  if (!demoAccountId) {
-    console.error('No DEMO_ACCOUNT_ID found in environment variables');
-    return null;
-  }
-
-  console.log('Using fallback demo account:', demoAccountId);
-  return demoAccountId;
+  // No fallback - accountId must be provided
+  console.error('No account ID found in request');
+  return null;
 }
 
 /**

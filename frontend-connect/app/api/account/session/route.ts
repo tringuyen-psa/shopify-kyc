@@ -6,56 +6,18 @@ export const dynamic = "force-dynamic";
 export async function POST(request: NextRequest) {
   try {
     const json = await request.json();
-    const { accountId, demoOnboarding, locale } = json;
+    const { accountId, locale } = json;
 
-    let stripeAccountId = accountId;
-
-    // Handle demo onboarding with different accounts based on locale
-    if (demoOnboarding !== undefined) {
-      const demoAccountId: string = (() => {
-        switch (locale) {
-          case "fr-FR":
-            return process.env.DEMO_ACCOUNT_ID || "acct_1SKwp5GvqAlHbzWt"; // Use your demo account
-          case "zh-Hant-HK":
-          case "en-GB":
-            return process.env.DEMO_ACCOUNT_ID || "acct_1SKwp5GvqAlHbzWt";
-          default:
-            return process.env.DEMO_ACCOUNT_ID || "acct_1SKwp5GvqAlHbzWt";
-        }
-      })();
-
-      console.log(
-        `Looking for the demo onboarding account ${demoAccountId} for locale ${locale}`
-      );
-
-      try {
-        const demoOnboardingAccount =
-          await stripe.accounts.retrieve(demoAccountId);
-        if (demoOnboardingAccount) {
-          console.log(
-            `Using demo onboarding account: ${demoOnboardingAccount.id} (${demoOnboardingAccount.business_profile?.name || "No business name"})`
-          );
-          stripeAccountId = demoOnboardingAccount.id;
-        } else {
-          console.log("No demo onboarding account found");
-        }
-      } catch (error: any) {
-        console.error(
-          "Demo account not found, using provided accountId:",
-          error.message
-        );
-        throw new Error(
-          `Demo account ${demoAccountId} not found or inaccessible: ${error.message}`
-        );
-      }
-    }
-
-    if (!stripeAccountId) {
+    // Account ID is required - always passed from localStorage
+    if (!accountId) {
       return NextResponse.json(
-        { error: "No Stripe account found" },
+        { error: "No Stripe account ID provided" },
         { status: 400 }
       );
     }
+
+    const stripeAccountId = accountId;
+    console.log(`Creating session for account: ${stripeAccountId}`);
 
     // Get account details to determine capabilities
     const account = await stripe.accounts.retrieve(stripeAccountId);

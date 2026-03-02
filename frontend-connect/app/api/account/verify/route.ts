@@ -3,32 +3,32 @@ import { stripe } from "@/lib/stripe";
 
 export async function POST(request: NextRequest) {
   try {
-    const { type } = await request.json();
+    const { accountId } = await request.json();
 
-    if (type === "demo") {
-      const demoAccountId = process.env.DEMO_ACCOUNT_ID;
-
-      if (!demoAccountId) {
-        return NextResponse.json(
-          { error: "Demo account not configured in .env" },
-          { status: 400 }
-        );
-      }
-
-      // Verify demo account exists
-      const account = await stripe.accounts.retrieve(demoAccountId);
-
-      return NextResponse.json({
-        accountId: account.id,
-        email: account.email,
-        type: "demo",
-      });
+    if (!accountId) {
+      return NextResponse.json(
+        { error: "accountId is required" },
+        { status: 400 }
+      );
     }
 
-    return NextResponse.json(
-      { error: "Invalid account type" },
-      { status: 400 }
-    );
+    // Verify account exists and is accessible
+    const account = await stripe.accounts.retrieve(accountId);
+
+    // Check if it's a custom account (supports auth bypass)
+    const isCustom =
+      account?.controller?.stripe_dashboard?.type === "none" &&
+      account?.controller?.losses?.payments === "application" &&
+      account?.controller?.requirement_collection === "application";
+
+    return NextResponse.json({
+      accountId: account.id,
+      email: account.email,
+      type: isCustom ? "custom" : account.type,
+      chargesEnabled: account.charges_enabled,
+      payoutsEnabled: account.payouts_enabled,
+      country: account.country,
+    });
   } catch (error: any) {
     console.error("Error verifying account:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });

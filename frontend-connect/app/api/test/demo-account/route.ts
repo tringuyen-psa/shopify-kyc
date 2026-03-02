@@ -1,21 +1,23 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const demoAccountId = process.env.DEMO_ACCOUNT_ID;
+    // Get accountId from query params or header
+    const { searchParams } = new URL(request.url);
+    const accountId = searchParams.get("accountId") || request.headers.get("x-stripe-account");
 
-    if (!demoAccountId) {
+    if (!accountId) {
       return NextResponse.json({
-        error: "DEMO_ACCOUNT_ID not configured",
-        status: "missing_config"
-      }, { status: 500 });
+        error: "accountId is required (pass as query param or x-stripe-account header)",
+        status: "missing_account_id"
+      }, { status: 400 });
     }
 
-    console.log('Testing demo account access:', demoAccountId);
+    console.log('Testing account access:', accountId);
 
     // Test if we can retrieve the account
-    const account = await stripe.accounts.retrieve(demoAccountId);
+    const account = await stripe.accounts.retrieve(accountId);
 
     // Check if it's a custom account
     const isCustom =

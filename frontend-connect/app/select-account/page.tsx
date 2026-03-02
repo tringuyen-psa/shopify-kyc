@@ -1,11 +1,46 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
-import { Building, Users, ArrowRight } from 'lucide-react'
+import { Building, Users, ArrowRight, Loader2 } from 'lucide-react'
+import { accountManager } from '@/lib/stripe-account'
 
 export const dynamic = 'force-dynamic'
 
 export default function SelectAccountPage() {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleDemoAccount = async () => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      const response = await fetch('/api/demo-account/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create demo account')
+      }
+
+      // Save the new account to localStorage
+      accountManager.save(data.accountId, 'demo')
+
+      // Redirect to home
+      window.location.href = '/home'
+    } catch (err: any) {
+      console.error('Error creating demo account:', err)
+      setError(err.message || 'Failed to create demo account')
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-5xl">
@@ -109,17 +144,28 @@ export default function SelectAccountPage() {
                 </li>
               </ul>
 
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+                  {error}
+                </div>
+              )}
+
               <button
-                onClick={() => {
-                  // Handle demo account selection
-                  const { accountManager } = require('@/lib/stripe-account');
-                  accountManager.save('demo_account_id', 'demo');
-                  window.location.href = '/home';
-                }}
-                className="w-full flex items-center justify-center bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                onClick={handleDemoAccount}
+                disabled={loading}
+                className="w-full flex items-center justify-center bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:bg-blue-400 disabled:cursor-not-allowed"
               >
-                Try Demo Account
-                <ArrowRight className="ml-2 h-4 w-4" />
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating Demo Account...
+                  </>
+                ) : (
+                  <>
+                    Try Demo Account
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </>
+                )}
               </button>
             </div>
           </div>

@@ -69,23 +69,17 @@ export const useConnect = (demoOnboarding: boolean = false) => {
   const fetchClientSecret = useCallback(async () => {
     const accountId = accountManager.getAccountId();
 
-    if (!accountId && !demoOnboarding) {
+    if (!accountId) {
       throw new Error('No account found');
     }
 
-    if (demoOnboarding) {
-      console.log('Fetching client secret for demo onboarding');
-    }
+    console.log('Fetching client secret for account:', accountId);
 
-    const data = demoOnboarding
-      ? {
-          demoOnboarding: true,
-          locale,
-        }
-      : {
-          accountId,
-          locale,
-        };
+    // Always send accountId from localStorage (works for both demo and live accounts)
+    const data = {
+      accountId,
+      locale,
+    };
 
     // Fetch the AccountSession client secret
     const response = await fetch('/api/account/session', {
@@ -107,7 +101,7 @@ export const useConnect = (demoOnboarding: boolean = false) => {
       setHasError(false);
       return clientSecret;
     }
-  }, [demoOnboarding, locale]);
+  }, [locale]);
 
   const appearanceVariables = useMemo(() => {
     const baseTheme = theme === 'dark' ? DarkTheme : LightTheme;

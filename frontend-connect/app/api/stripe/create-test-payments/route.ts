@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
-import { accountManager } from "@/lib/stripe-account";
 
 export async function POST(request: NextRequest) {
   try {
     const { count, amount, status, currency } = await request.json();
 
-    // Get account ID from request (for demo, use stored account)
-    const accountId = process.env.DEMO_ACCOUNT_ID || accountManager.getAccountId();
+    // Get account ID from request header or body
+    const accountId = request.headers.get("x-stripe-account");
 
     if (!accountId) {
       return NextResponse.json(

@@ -99,7 +99,7 @@ export async function GET(request: NextRequest) {
       console.log('Permission error - providing mock demo account data');
 
       const mockDemoAccount = {
-        id: process.env.DEMO_ACCOUNT_ID || 'demo_account_id',
+        id: 'demo_account',
         email: 'demo@furever.com',
         charges_enabled: true,
         payouts_enabled: true,
@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
         default_currency: 'usd',
         type: 'custom',
         business_profile: {
-          name: process.env.DEMO_ACCOUNT_NAME || 'Furever Demo Account',
+          name: 'Furever Demo Account',
           url: 'https://furever.com',
           support_email: 'support@furever.com',
         },
